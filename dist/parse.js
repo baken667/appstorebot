@@ -26,14 +26,16 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.parsePrice = void 0;
 const cheerio = __importStar(require("cheerio"));
 const parsePrice = async (url) => {
+    console.log(url);
     try {
+        console.log('start fetch');
         const response = await fetch(url);
         const html = await response.text();
         const $ = cheerio.load(html);
         const title = $(".app-header__title").contents().filter(function () {
             return this.type === 'text';
         }).text().trim();
-        const priceText = $('.app-header__list__item--price').text().trim();
+        const priceText = $('.app-header__list__item--price').text().trim().replace(',', '.');
         return {
             title: title,
             price: priceText
@@ -42,6 +44,9 @@ const parsePrice = async (url) => {
     catch (e) {
         console.error(e);
         return null;
+    }
+    finally {
+        console.log('end fetch');
     }
 };
 exports.parsePrice = parsePrice;

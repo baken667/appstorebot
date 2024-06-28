@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const dotenv_1 = __importDefault(require("dotenv"));
 const grammy_1 = require("grammy");
 const parse_1 = require("./parse");
+const node_cron_1 = require("node-cron");
 const prisma_1 = __importDefault(require("./prisma"));
 dotenv_1.default.config();
 if (process.env.API_TOKEN === undefined) {
@@ -76,10 +77,15 @@ const checkPrices = async () => {
         }
     });
     for (const link of appLinks) {
+        console.log(link.price);
         const data = await (0, parse_1.parsePrice)(link.url);
+        console.log(data);
         if (!data)
             return;
-        if (parsePriceFormat(data.price) !== parsePriceFormat(link.price)) {
+        console.log(data.price, 'data');
+        console.log(parseFloat(data.price), 'price');
+        if (parseFloat(data.price) !== parseFloat(link.price)) {
+            console.log('updated:', data.price);
             await prisma_1.default.appLink.update({
                 where: { id: link.id },
                 data: {
@@ -93,14 +99,7 @@ const checkPrices = async () => {
         }
     }
 };
-function parsePriceFormat(price) {
-    return parseFloat(price.slice(0, -1));
-}
-// schedule('*/5 * * * *', () => {
-//     checkPrices()
-// })
-setTimeout(() => {
-    console.log("hi");
+(0, node_cron_1.schedule)('0 * * * *', () => {
     checkPrices();
-}, 10000);
+});
 bot.start();
